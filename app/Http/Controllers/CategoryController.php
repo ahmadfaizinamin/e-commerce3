@@ -3,6 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Category\StoreCategory;
+use App\Http\Requests\Category\StoreCategoryRequest;
+use App\Http\Requests\Category\UpdateCategoryRequest;
+use App\Http\Resources\CategoryResource;
 use App\Services\CategoryService;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -27,7 +31,7 @@ class CategoryController extends Controller
 
             return response()->json([
                 'status' => 'success',
-                'data' => $data
+                'data' => CategoryResource::collection($data)
             ], 200);
         } catch (Exception $e) {
             return response()->json([
@@ -40,18 +44,16 @@ class CategoryController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreCategoryRequest $request)
     {
-        $validasi = $request->validate([
-            'name' => 'required|string',
-        ]);
-
         try {
+            $validasi = $request->validated();
+
             $data = $this->categoryService->createCategory($validasi);
 
             return response()->json([
                 'status' => 'success',
-                'data' => $data
+                'data' => new CategoryResource($data)
             ], 201);
         } catch (Exception $e) {
             return response()->json([
@@ -71,7 +73,7 @@ class CategoryController extends Controller
 
             return response()->json([
                 'status' => 'success',
-                'data' => $data
+                'data' => new CategoryResource($data)
             ], 200);
         } catch (ModelNotFoundException $e) {
             return response()->json([
@@ -89,18 +91,16 @@ class CategoryController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(UpdateCategoryRequest $request, string $id)
     {
-        $validate = $request->validate([
-            'name' => 'sometimes|required|string'
-        ]);
-
         try {
-            $data = $this->categoryService->updateCategory($id, $validate);
+            $validasi = $request->validated();
+
+            $data = $this->categoryService->updateCategory($id, $validasi);
 
             return response()->json([
                 'status' => 'success',
-                'data' => $data
+                'data' => new CategoryResource($data)
             ], 200);
         } catch (ModelNotFoundException $e) {
             return response()->json([
