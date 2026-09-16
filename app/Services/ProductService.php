@@ -50,7 +50,7 @@ class ProductService
         return $this->productRepository->update($id, $data);
     }
 
-    public function delteProduct($id)
+    public function deleteProduct($id)
     {
         Cache::forget('products_all');
         Cache::forget("product_$id");

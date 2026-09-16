@@ -31,9 +31,9 @@ class UserService
 
     public function userLogin(array $data)
     {
-        $user = Auth::guard('api')->user();
-
         $token = Auth::guard('api')->attempt($data);
+        
+        $user = Auth::guard('api')->user();
 
         return[
             'user' => $user,

@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreProductRequest;
+use App\Http\Requests\UpdateProductRequest;
+use App\Http\Resources\ProductResource;
 use App\Services\ProductService;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -27,7 +30,7 @@ class ProductController extends Controller
 
             return response()->json([
                 'status' => 'success',
-                'data' => $data
+                'data' => ProductResource::collection($data)
             ], 200);
         } catch (Exception $e) {
             return response()->json([
@@ -40,21 +43,16 @@ class ProductController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreProductRequest $request)
     {
-        $validasi = $request->validate([
-            'name' => 'required|string',
-            'category_id' => 'required|exists:categories,id',
-            'price' => 'required|integer',
-            'stock' => 'required|integer',
-        ]);
-
         try {
+            $validasi = $request->validated();
+
             $data = $this->productService->createProduct($validasi);
 
             return response()->json([
                 'status' => 'success',
-                'data' => $data
+                'data' => new ProductResource($data)
             ], 201);
         } catch (Exception $e) {
             return response()->json([
@@ -74,13 +72,13 @@ class ProductController extends Controller
 
             return response()->json([
                 'status' => 'success',
-                'data' => $data
+                'data' => new ProductResource($data)
             ], 200);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'product tidak ditemukan'
-            ], 401);
+            ], 404);
         } catch (Exception $e) {
             return response()->json([
                 'status' => 'error',
@@ -92,27 +90,22 @@ class ProductController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(UpdateProductRequest $request, string $id)
     {
-        $validate = $request->validate([
-            'name' => 'sometimes|required|string',
-            'category_id' => 'sometimes|required|exists:categories,id',
-            'price' => 'sometimes|required|integer',
-            'stock' => 'sometimes|required|integer',
-        ]);
-
         try {
-            $data = $this->productService->updateProduct($id, $validate);
+            $validasi = $request->validated();
+
+            $data = $this->productService->updateProduct($id, $validasi);
 
             return response()->json([
                 'status' => 'success',
-                'data' => $data
+                'data' => new ProductResource($data)
             ], 200);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'product tidak ditemukan'
-            ], 401);
+            ], 404);
         } catch (Exception $e) {
             return response()->json([
                 'status' => 'error',
@@ -128,17 +121,17 @@ class ProductController extends Controller
     {
         try {
             $product = $this->productService->getByIdProduct($id);
-            $this->productService->delteProduct($id);
+            $this->productService->deleteProduct($id);
 
             return response()->json([
                 'status' => 'success',
-                'message' => 'product ' . $product['name']. ', berhasil dihapus'
+                'message' => 'product ' . $product['name'] . ', berhasil dihapus'
             ], 200);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'product tidak ditemukan'
-            ], 401);
+            ], 404);
         } catch (Exception $e) {
             return response()->json([
                 'status' => 'error',
